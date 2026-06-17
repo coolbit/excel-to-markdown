@@ -1,0 +1,42 @@
+{
+  "name": "excel-to-markdown",
+  "version": "1.0.0",
+  "description": "Convert a multi-tab Excel workbook (text + embedded images + flow diagrams) into faithful Markdown: one Excel-fidelity PNG per sheet plus searchable extracted text (strikethrough preserved).",
+  "bin": {
+    "excel-to-markdown": "bin/cli.js"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node bin/cli.js --help"
+  },
+  "keywords": [
+    "excel",
+    "xlsx",
+    "markdown",
+    "pdf",
+    "libreoffice",
+    "convert",
+    "spreadsheet",
+    "render",
+    "screenshot",
+    "flow-diagram"
+  ],
+  "engines": {
+    "node": ">=14"
+  },
+  "license": "MIT",
+  "author": "dawn <dawn@theplant.jp>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/coolbit/excel-to-markdown.git"
+  },
+  "bugs": {
+    "url": "https://github.com/coolbit/excel-to-markdown/issues"
+  },
+  "homepage": "https://github.com/coolbit/excel-to-markdown#readme"
+}
