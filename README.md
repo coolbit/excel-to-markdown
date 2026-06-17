@@ -1,3 +1,5 @@
+<!-- 语言 / Language: **English** · [中文](README.zh-CN.md) -->
+
 # excel-to-markdown
 
 An **npx installer** for the `xlsx-to-markdown` [Claude Code](https://claude.com/claude-code)
