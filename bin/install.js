@@ -38,7 +38,7 @@ if (dirIdx !== -1 && args[dirIdx + 1]) {
   base = path.join(os.homedir(), '.claude', 'skills');
 }
 
-const srcSkill = path.join(__dirname, '..', 'skill');
+const srcSkill = path.join(__dirname, '..', 'skills', SKILL_NAME);
 const dest = path.join(base, SKILL_NAME);
 
 try {

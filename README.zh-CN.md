@@ -10,6 +10,16 @@
 
 ## 安装技能
 
+**方式 A —— `skills` CLI**（[vercel-labs/skills](https://github.com/vercel-labs/skills)，支持 Claude Code / Cursor / Codex 等）：
+
+```bash
+npx skills add coolbit/excel-to-markdown
+# 或显式指定：
+npx skills add coolbit/excel-to-markdown --skill xlsx-to-markdown
+```
+
+**方式 B —— 自带安装器**（把技能拷进你的 skills 目录）：
+
 ```bash
 # 装到 ~/.claude/skills（全局）
 npx github:coolbit/excel-to-markdown

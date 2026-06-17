@@ -14,6 +14,16 @@ Markdown**:
 
 ## Install the skill
 
+**Option A — the `skills` CLI** ([vercel-labs/skills](https://github.com/vercel-labs/skills), works for Claude Code / Cursor / Codex / …):
+
+```bash
+npx skills add coolbit/excel-to-markdown
+# or pick explicitly:
+npx skills add coolbit/excel-to-markdown --skill xlsx-to-markdown
+```
+
+**Option B — the bundled installer** (copies the skill into your skills dir):
+
 ```bash
 # into ~/.claude/skills (global)
 npx github:coolbit/excel-to-markdown

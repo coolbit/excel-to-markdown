@@ -7,7 +7,7 @@
   },
   "files": [
     "bin/",
-    "skill/",
+    "skills/",
     "README.md",
     "README.zh-CN.md",
     "LICENSE"
