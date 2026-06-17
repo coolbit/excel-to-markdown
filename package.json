@@ -1,20 +1,22 @@
 {
   "name": "excel-to-markdown",
   "version": "1.0.0",
-  "description": "Convert a multi-tab Excel workbook (text + embedded images + flow diagrams) into faithful Markdown: one Excel-fidelity PNG per sheet plus searchable extracted text (strikethrough preserved).",
+  "description": "npx installer for the xlsx-to-markdown Claude Code skill: converts a multi-tab Excel workbook (text + embedded images + flow diagrams) into faithful Markdown — one Excel-fidelity PNG per sheet plus searchable extracted text.",
   "bin": {
-    "excel-to-markdown": "bin/cli.js"
+    "excel-to-markdown": "bin/install.js"
   },
   "files": [
     "bin/",
-    "lib/",
+    "skill/",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
-    "test": "node bin/cli.js --help"
+    "test": "node bin/install.js --help"
   },
   "keywords": [
+    "claude-code",
+    "claude-skill",
     "excel",
     "xlsx",
     "markdown",
@@ -22,9 +24,7 @@
     "libreoffice",
     "convert",
     "spreadsheet",
-    "render",
-    "screenshot",
-    "flow-diagram"
+    "render"
   ],
   "engines": {
     "node": ">=14"
