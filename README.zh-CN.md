@@ -39,6 +39,14 @@ npx github:coolbit/excel-to-markdown --project
 brew install poppler imagemagick        # pdftoppm + magick
 ```
 
+**字体** —— 必须装至少一个 CJK 字体，否则 LibreOffice 会回退到字宽不同的字体，
+同一单元格里相邻的 run 会**叠字**（`URLが~~SMS~~LINEWORKS` 渲染成 `SMSLINEWORKS` 重叠）。
+本 skill 会把 workbook 请求但本机没装的字体改写成已安装的替代字体，所以得先给它一个：
+
+```bash
+brew install --cask font-noto-sans-jp font-biz-udgothic
+```
+
 **LibreOffice**（`soffice`）——先试 `brew install --cask libreoffice`。若因 macOS 版本报错
 （新系统上 cask 元数据过期），改装官方 dmg：
 

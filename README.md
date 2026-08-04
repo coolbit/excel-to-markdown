@@ -44,6 +44,15 @@ The skill shells out to three CLIs plus python3:
 brew install poppler imagemagick        # pdftoppm + magick
 ```
 
+**Fonts** — a CJK font must be installed, or LibreOffice falls back to one with
+different advance widths and text in a cell **overlaps run by run**
+(`URLが~~SMS~~LINEWORKS` → `SMSLINEWORKS` collided). The skill rewrites any font the
+workbook asks for that isn't installed to an installed fallback, so give it one:
+
+```bash
+brew install --cask font-noto-sans-jp font-biz-udgothic
+```
+
 **LibreOffice** (`soffice`) — try `brew install --cask libreoffice` first. If it fails
 with a macOS-version error (stale cask on a newer OS), install the official dmg:
 

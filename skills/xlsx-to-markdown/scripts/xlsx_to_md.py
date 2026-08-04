@@ -52,6 +52,78 @@ def si_text(si):
         elif tag == 'r':   parts.append(run_text(ch))
     return ''.join(parts)
 
+# ---------- font substitution (missing fonts -> installed CJK-capable fallback) ----------
+# Why: LibreOffice's fallback for a missing font has different advance widths than
+# the requested one, so adjacent runs in one cell overlap ("SMS"+"LINEWORKS" collide)
+# and words get spurious gaps. Rewriting the *requested* name to a font that is
+# actually installed makes layout metrics consistent.
+FALLBACK_PREFS = ['Noto Sans JP', 'Noto Sans CJK JP', 'BIZ UDPGothic', 'BIZ UDGothic',
+                  'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'IPAexGothic',
+                  'Yu Gothic', 'Meiryo', 'Arial Unicode MS']
+
+# files whose font references we rewrite, and the attribute patterns to rewrite
+FONT_PATTERNS = [(r'(<name val=")([^"]+)(")', 2),      # styles.xml <font><name val="..."/>
+                 (r'(rFont val=")([^"]+)(")', 2),      # rich-text runs
+                 (r'(typeface=")([^"]+)(")', 2)]       # drawingml a:latin/a:ea/a:cs
+
+def installed_families():
+    """Lowercased family names known to fontconfig (LibreOffice sees the same dirs)."""
+    if not shutil.which('fc-list'):
+        return None
+    out = subprocess.run(['fc-list', '--format', '%{family}\n'],
+                         capture_output=True, text=True).stdout
+    fams = set()
+    for line in out.splitlines():
+        for f in line.split(','):
+            f = f.strip()
+            if f: fams.add(f.lower())
+    return fams
+
+def substitute_fonts(src, fallback=None, verbose=True):
+    fams = installed_families()
+    if fams is None:
+        print('WARN: fc-list not found; skipping font substitution', file=sys.stderr)
+        return
+    fb = fallback or next((f for f in FALLBACK_PREFS if f.lower() in fams), None)
+    if not fb:
+        print('WARN: no CJK fallback font installed; skipping font substitution '
+              '(brew install --cask font-noto-sans-jp)', file=sys.stderr)
+        return
+
+    targets = []
+    for sub in ('xl', 'xl/worksheets', 'xl/drawings', 'xl/charts', 'xl/theme'):
+        d = os.path.join(src, sub)
+        if not os.path.isdir(d): continue
+        targets += [os.path.join(d, f) for f in os.listdir(d) if f.endswith('.xml')]
+
+    missing, changed = set(), 0
+    for p in targets:
+        try:
+            s = open(p, encoding='utf-8').read()
+        except (OSError, UnicodeDecodeError):
+            continue
+        orig = s
+        # theme fontScheme lists a per-script font (<a:font script="Thai" typeface="..."/>);
+        # those aren't used for CJK/Latin text — mask them so we don't clobber them.
+        masked = []
+        def mask(m):
+            masked.append(m.group(0)); return f'\x00{len(masked)-1}\x00'
+        s = re.sub(r'<a:font script="[^"]*"[^>]*/>', mask, s)
+        for pat, gi in FONT_PATTERNS:
+            def repl(m):
+                name = m.group(gi)
+                if name.startswith('+') or name.lower() in fams or name == fb:
+                    return m.group(0)                    # theme ref / installed / already fallback
+                missing.add(name)
+                return m.group(1) + fb + m.group(3)
+            s = re.sub(pat, repl, s)
+        s = re.sub(r'\x00(\d+)\x00', lambda m: masked[int(m.group(1))], s)
+        if s != orig:
+            open(p, 'w', encoding='utf-8').write(s); changed += 1
+    if verbose and missing:
+        print(f'     fonts: {", ".join(sorted(missing))} -> "{fb}" '
+              f'({changed} xml files)')
+
 def colrow(ref):
     m = re.match(r'([A-Z]+)(\d+)', ref)
     if not m: return (0, 0)
@@ -65,6 +137,11 @@ def main():
     ap.add_argument('--dpi', type=int, default=200)
     ap.add_argument('--soffice', default=None)
     ap.add_argument('--paper-mm', type=int, default=3000, help='custom page size (each side)')
+    ap.add_argument('--font-fallback', default=None,
+                    help='font to substitute for fonts missing on this machine '
+                         '(default: first installed of %s)' % ', '.join(FALLBACK_PREFS[:3]))
+    ap.add_argument('--no-font-substitution', action='store_true',
+                    help='keep original font names even if not installed (may overlap text)')
     args = ap.parse_args()
 
     soffice = find_soffice(args.soffice)
@@ -106,6 +183,10 @@ def main():
         else:
             s = re.sub(r'(<pageMargins\b[^>]*/>)', r'\1'+ps, s, count=1)
         open(p, 'w', encoding='utf-8').write(s)
+
+    # ---- rewrite font names that aren't installed (prevents overlapping runs) ----
+    if not args.no_font_substitution:
+        substitute_fonts(src, args.font_fallback)
 
     # ---- re-zip ----
     fit = os.path.join(work, 'fit.xlsx')

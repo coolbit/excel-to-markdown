@@ -35,11 +35,41 @@ The script (see `scripts/xlsx_to_md.py`):
 2. Extract text per sheet in row order. Strip furigana (`<rPh>`); render
    strikethrough runs (`<strike/>`) as `<del>…</del>` (= author's "delete" intent).
 3. Inject `<pageSetup paperWidth/Height="3000mm" scale="100" orientation="landscape"/>`
-   + `pageSetUpPr fitToPage="0"` into each sheet; re-zip.
-4. `soffice --headless --convert-to pdf` (one big page per sheet, nothing split).
-5. Probe content size per page at 50 dpi (`magick -trim`), then `pdftoppm` each page
+   + `pageSetUpPr fitToPage="0"` into each sheet.
+4. Rewrite every requested font that isn't installed on this machine to an installed
+   CJK-capable one (see **Fonts** below); re-zip.
+5. `soffice --headless --convert-to pdf` (one big page per sheet, nothing split).
+6. Probe content size per page at 50 dpi (`magick -trim`), then `pdftoppm` each page
    cropped to content at target dpi, `magick -trim` the result.
-6. Emit Markdown: per tab → image + collapsible extracted text.
+7. Emit Markdown: per tab → image + collapsible extracted text.
+
+## Fonts — the #1 cause of garbled output
+
+Symptom: **adjacent runs in one cell overlap** (`URLが~~SMS~~LINEWORKS` renders as
+`SMSLINEWORKS` collided) and words get spurious gaps (`LI NEWORKS`).
+
+Cause: the workbook asks for a font that isn't installed (Japanese workbooks almost
+always want `Meiryo UI` / `游ゴシック` / `Yu Gothic` / `MS Pゴシック`). LibreOffice
+falls back to whatever covers the glyphs — on macOS often `Hiragino Sans GB` (Chinese)
+or `AquaKana` — whose advance widths differ from the requested font, so run-by-run
+layout drifts and collides. It is **not** a DPI or rendering-quality issue.
+
+Fix: the script rewrites unavailable font names to an installed fallback before
+conversion (prefers `Noto Sans JP`, then `Noto Sans CJK JP`, `BIZ UDPGothic`,
+`BIZ UDGothic`, `Hiragino Sans`, …). It prints what it substituted:
+```
+     fonts: Aptos Display, Meiryo UI, 游ゴシック -> "Noto Sans JP" (9 xml files)
+```
+Install at least one CJK font so a fallback exists:
+```bash
+brew install --cask font-noto-sans-jp font-biz-udgothic
+```
+- `--font-fallback "BIZ UDPGothic"` to pick the substitute yourself.
+- `--no-font-substitution` to keep original names (only if the real fonts are installed).
+- Availability is probed with `fc-list`; without it substitution is skipped with a warning.
+- Substitution changes metrics slightly, so line wrapping (and thus PNG height) can
+  differ a little from Excel on Windows. Correct glyphs beat exact wrapping.
+- Per-script theme fonts (`<a:font script="Thai" …/>`) are left untouched.
 
 ## Dependencies
 
